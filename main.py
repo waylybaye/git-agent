@@ -1,4 +1,4 @@
-from __future__ import unicode_literal
+from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
@@ -6,8 +6,15 @@ import time
 from collections import defaultdict
 
 
+import docker
+
+
 MOUNT_ROOT = '/rootfs/'
 PULL_INTERVAL_SECONDS = 60 * 5
+
+
+def parse_env(envs):
+    return dict(env.split('=', 1) for env in envs)
 
 
 def main():
@@ -19,15 +26,17 @@ def main():
     GIT_PULL_FORCE: force to pull
     """
     client = docker.from_env()
-    ps_interval = 5
+    ps_interval = 30
 
-    last_updates = defaultdict(0)
+    last_updates = defaultdict(int)
+
+    print("Started, watching container changes ...")
 
     while True:
         start_at = time.time()
 
         for container in client.containers.list():
-            envs = container.attrs['Config']['Env']
+            envs = parse_env(container.attrs['Config']['Env'])
 
             if 'GIT_VOLUME' not in envs or 'GIT_REMOTE' not in envs:
                 continue
@@ -49,7 +58,7 @@ def main():
 
             mounts = container.attrs.get('Mounts', [])
 
-            print("ERROR: update container ", container.name)
+            print(container.name, " : check for update ...")
             if not mounts:
                 print("ERROR: no mounts found")
                 continue
@@ -69,12 +78,13 @@ def main():
             else:
                 cmd = "git pull " + (' --force ' if git_force == 'true' else '')
 
-            os.system("cd " + path + ' && ', cmd)
+            os.system("cd " + path + ' && ' + cmd)
 
         end_at = time.time()
 
+
         if end_at - start_at < ps_interval:
-            time.sleep(end_at - start_at)
+            time.sleep(ps_interval - (end_at - start_at))
 
 
 if __name__ == '__main__':
