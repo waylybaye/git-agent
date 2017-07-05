@@ -76,7 +76,7 @@ def main():
                 print("Clone ", git_remote)
                 cmd = "git clone " + git_remote + " ."
             else:
-                cmd = "git pull " + (' --force ' if git_force == 'true' else '')
+                cmd = "git pull " + (' --force ' if git_force.lower() == 'true' else '')
 
             os.system("cd " + path + ' && ' + cmd)
 
