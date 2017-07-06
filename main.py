@@ -23,7 +23,7 @@ def main():
 
     GIT_VOLUME: the base git volume
     GIT_INTERVAL: interval seconds
-    GIT_PULL_FORCE: force to pull
+    GIT_FORCE_PULL: force to pull
     """
     client = docker.from_env()
     ps_interval = 30
@@ -53,7 +53,7 @@ def main():
 
             git_volume = envs['GIT_VOLUME']
             git_remote = envs['GIT_REMOTE']
-            git_force = envs.get('GIT_PULL_FORCE', 'false')
+            git_force = envs.get('GIT_FORCE_PULL', 'false')
             host_source = ''
 
             mounts = container.attrs.get('Mounts', [])
