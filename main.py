@@ -31,7 +31,7 @@ def main(mount_root):
     GIT_CHMOD: run chmod $GIT_CHMOD
     """
     default_pull_interval = os.environ.get('GIT_INTERVAL')
-    default_pull_interval = int(default_pull_interval) if default_pull_interval and default_pull_interval.isdigt() else 60 * 5
+    default_pull_interval = int(default_pull_interval) if default_pull_interval and default_pull_interval.isdigit() else 60 * 5
 
     client = docker.from_env()
     ps_interval = 30
