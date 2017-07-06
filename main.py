@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
+import sys
 import time
 from collections import defaultdict
 
@@ -9,7 +10,7 @@ from collections import defaultdict
 import docker
 
 
-MOUNT_ROOT = '/rootfs/'
+MOUNT_ROOT = '/'
 PULL_INTERVAL_SECONDS = 60 * 5
 
 
@@ -17,7 +18,7 @@ def parse_env(envs):
     return dict(env.split('=', 1) for env in envs)
 
 
-def main():
+def main(mount_root):
     """
     Docker ENVs
 
@@ -71,7 +72,7 @@ def main():
                 print("ERROR: volume not found")
                 continue
 
-            path = os.path.join(MOUNT_ROOT, host_source[1:])
+            path = os.path.join(mount_root, host_source[1:])
             if not os.path.exists(os.path.join(path, '.git')):
                 print("Clone ", git_remote)
                 cmd = "git clone " + git_remote + " ."
@@ -88,4 +89,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    root = sys.argv[1] if len(sys.argv) > 1 else MOUNT_ROOT
+    main(root)
