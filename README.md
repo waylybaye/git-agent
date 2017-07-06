@@ -25,12 +25,17 @@ docker run --rm -it -e GIT_VOLUME='/srv' \
 
 ### git-agent ENV
 
+```
+GIT_FORCE: the default force value, default to false
+```
+
 
 ### other container's ENV
 
 ```
 GIT_VOLUME: the volume inside your container
 GIT_REMOTE: remote git repo, NOTE ssh need interactive confirm when first clone
+GIT_BRANCH: branch to work on
 GIT_INTERVAL: check for update every GIT_INTERVAL seconds, default to 5*60
-GIT_FORCE_PULL: force pull, default to false
+GIT_FORCE: force to pull, default to git-agent's GIT_FORCE
 ```

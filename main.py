@@ -3,8 +3,8 @@ from __future__ import print_function
 
 import os
 import time
+import subprocess
 from collections import defaultdict
-
 
 import docker
 
@@ -22,8 +22,10 @@ def main():
     Docker ENVs
 
     GIT_VOLUME: the base git volume
+    GIT_REMOTE: the git remote
+    GIT_BRANCH: the git branch
     GIT_INTERVAL: interval seconds
-    GIT_FORCE_PULL: force to pull
+    GIT_FORCE: force to pull
     """
     client = docker.from_env()
     ps_interval = 30
@@ -53,7 +55,10 @@ def main():
 
             git_volume = envs['GIT_VOLUME']
             git_remote = envs['GIT_REMOTE']
-            git_force = envs.get('GIT_FORCE_PULL', 'false')
+            git_branch = envs['GIT_BRANCH'] or 'master'
+            git_force = envs.get('GIT_FORCE', os.environ.get('GIT_FORCE', 'false'))
+            git_force_flag = ' -f ' if git_force.lower() == 'true' else ''
+
             host_source = ''
 
             mounts = container.attrs.get('Mounts', [])
@@ -72,16 +77,19 @@ def main():
                 continue
 
             path = os.path.join(MOUNT_ROOT, host_source[1:])
+
             if not os.path.exists(os.path.join(path, '.git')):
                 print("Clone ", git_remote)
-                cmd = "git clone " + git_remote + " ."
-            else:
-                cmd = "git pull " + (' --force ' if git_force.lower() == 'true' else '')
+                cmd = "git clone -b %s %s ." % (git_branch, git_remote)
+                subprocess.Popen(cmd)
 
-            os.system("cd " + path + ' && ' + cmd)
+            else:
+                cmd = "git checkout %s %s && git pull %s" % (
+                    git_force_flag, git_branch, git_force_flag
+                )
+                subprocess.Popen(cmd)
 
         end_at = time.time()
-
 
         if end_at - start_at < ps_interval:
             time.sleep(ps_interval - (end_at - start_at))
