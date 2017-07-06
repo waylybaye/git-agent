@@ -77,7 +77,7 @@ def main(mount_root):
                 continue
 
             for mount in mounts:
-                if mount['Destination'] == git_volume:
+                if mount['Destination'].rstrip('/') == git_volume.rstrip('/'):
                     host_source = mount['Source']
                     break
             else:
