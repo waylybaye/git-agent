@@ -56,7 +56,7 @@ def main(mount_root):
 
             git_volume = envs['GIT_VOLUME']
             git_remote = envs['GIT_REMOTE']
-            git_branch = envs['GIT_BRANCH'] or 'master'
+            git_branch = envs.get('GIT_BRANCH', 'master')
             git_force = envs.get('GIT_FORCE', os.environ.get('GIT_FORCE', 'false'))
             git_force_flag = ' -f ' if git_force.lower() == 'true' else ''
 
@@ -82,13 +82,15 @@ def main(mount_root):
             if not os.path.exists(os.path.join(path, '.git')):
                 print("Clone ", git_remote)
                 cmd = "git clone -b %s %s ." % (git_branch, git_remote)
-                subprocess.Popen(cmd)
+                print('run',cmd)
+                subprocess.Popen(cmd, cwd=path, shell=True)
 
             else:
                 cmd = "git checkout %s %s && git pull %s" % (
                     git_force_flag, git_branch, git_force_flag
                 )
-                subprocess.Popen(cmd)
+                print('run',cmd)
+                subprocess.Popen(cmd, cwd=path, shell=True)
 
         end_at = time.time()
 
