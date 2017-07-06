@@ -23,14 +23,15 @@ docker run --rm -it -e GIT_VOLUME='/srv' \
 -v /srv s alpine sh
 ```
 
-### git-agent ENV
+### git-agent docker envs
 
 ```
-GIT_FORCE: the default force value, default to false
+GIT_INTERVAL: pull interval, default to 300 (seconds)
+GIT_FORCE: force to pull
 ```
 
 
-### other container's ENV
+### other container's docker envs
 
 ```
 # required

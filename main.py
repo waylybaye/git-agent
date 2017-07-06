@@ -12,7 +12,6 @@ import docker
 
 
 MOUNT_ROOT = '/'
-PULL_INTERVAL_SECONDS = 60 * 5
 
 
 def parse_env(envs):
@@ -31,6 +30,9 @@ def main(mount_root):
     GIT_CHOWN: run chown $GIT_CHOWN
     GIT_CHMOD: run chmod $GIT_CHMOD
     """
+    default_pull_interval = os.environ.get('GIT_INTERVAL')
+    default_pull_interval = int(default_pull_interval) if default_pull_interval and default_pull_interval.isdigt() else 60 * 5
+
     client = docker.from_env()
     ps_interval = 30
 
@@ -48,7 +50,7 @@ def main(mount_root):
                 continue
 
             interval = envs.get('GIT_INTERVAL', '')
-            interval = int(interval) if interval.isdigit() else PULL_INTERVAL_SECONDS
+            interval = int(interval) if interval.isdigit() else default_pull_interval
 
             last_update = last_updates[container.id]
             if not last_update:
@@ -102,6 +104,8 @@ def main(mount_root):
 
             if git_chmod:
                 subprocess.Popen('chmod %s .' % git_chmod, cwd=path, shell=True)
+
+            last_updates[container.id] = time.time()
 
         end_at = time.time()
 
