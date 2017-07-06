@@ -4,6 +4,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+import signal
 import subprocess
 from collections import defaultdict
 
@@ -27,6 +28,8 @@ def main(mount_root):
     GIT_BRANCH: the git branch
     GIT_INTERVAL: interval seconds
     GIT_FORCE: force to pull
+    GIT_CHOWN: run chown $GIT_CHOWN
+    GIT_CHMOD: run chmod $GIT_CHMOD
     """
     client = docker.from_env()
     ps_interval = 30
@@ -57,6 +60,8 @@ def main(mount_root):
             git_volume = envs['GIT_VOLUME']
             git_remote = envs['GIT_REMOTE']
             git_branch = envs.get('GIT_BRANCH', 'master')
+            git_chown = envs.get('GIT_CHOWN', '')
+            git_chmod = envs.get('GIT_CHMOD', '')
             git_force = envs.get('GIT_FORCE', os.environ.get('GIT_FORCE', 'false'))
             git_force_flag = ' -f ' if git_force.lower() == 'true' else ''
 
@@ -82,15 +87,21 @@ def main(mount_root):
             if not os.path.exists(os.path.join(path, '.git')):
                 print("Clone ", git_remote)
                 cmd = "git clone -b %s %s ." % (git_branch, git_remote)
-                print('run',cmd)
                 subprocess.Popen(cmd, cwd=path, shell=True)
+                # container.kill(signal.SIGHUP)
 
             else:
                 cmd = "git checkout %s %s && git pull %s" % (
                     git_force_flag, git_branch, git_force_flag
                 )
-                print('run',cmd)
                 subprocess.Popen(cmd, cwd=path, shell=True)
+                # container.kill(signal.SIGHUP)
+
+            if git_chown:
+                subprocess.Popen('chown -R %s .' % git_chown, cwd=path, shell=True)
+
+            if git_chmod:
+                subprocess.Popen('chmod %s .' % git_chmod, cwd=path, shell=True)
 
         end_at = time.time()
 
